@@ -179,37 +179,24 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    new Menu(
-        "img/tabs/vegy.jpg",
-        "vegy",
-        'Меню "Фитнес"',
-        'Меню "Фитнес" - это новый подход к приготовлению блюд: больше свежих овощей и фруктов. Продукт активных и здоровых людей. Это абсолютно новый продукт с оптимальной ценой и высоким качеством!',
-        '10',
-        '.menu .container',
-        'menu__item'
-    ).menuContent();
+    const getResource = async (url) => {
+        const res = await fetch(url);
+        
+        if (!res.ok) {
+            throw new Error(`Couldn't fetch ${url}, status: ${res.status}`);
+        }
+        return await res.json();
+    };
 
-    new Menu(
-        "img/tabs/elite.jpg",
-        "elite",
-        'Меню “Премиум”',
-        'В меню “Премиум” мы используем не только красивый дизайн упаковки, но и качественное исполнение блюд. Красная рыба, морепродукты, фрукты - ресторанное меню без похода в ресторан!',
-        '15',
-        '.menu .container',
-        'menu__item'
-    ).menuContent();
-
-    new Menu(
-        "img/tabs/post.jpg",
-        "post",
-        'Меню "Постное"',
-        'Меню “Постное” - это тщательный подбор ингредиентов: полное отсутствие продуктов животного происхождения, молоко из миндаля, овса, кокоса или гречки, правильное количество белков за счет тофу и импортных вегетарианских стейков.',
-        '12',
-        '.menu .container',
-        'menu__item'
-    ).menuContent();
+    getResource('http://localhost:3000/menu')
+    .then(data => {
+        data.forEach(({img, altImg, title, descr, price}) => {
+            new Menu(img, altImg, title, descr, price, '.menu .container').menuContent();
+        });
+    });
 
     const forms = document.querySelectorAll('form');
+
     const message = {
         loading: 'img/form/spinner.svg',
         success: 'Спасибо! Мы скоро с вами свяжемся.',
@@ -247,12 +234,10 @@ window.addEventListener('DOMContentLoaded', () => {
 
             const formData = new FormData(form);
 
-            const object = {};
-            formData.forEach(function (value, key) {
-                object[key] = value;
-            });
 
-            postData('http://localhost:3000/requests', JSON.stringify(object))
+            const json = JSON.stringify(Object.fromEntries(formData.entries()));
+
+            postData('http://localhost:3000/requests', json)
                 .then(data => {
                     console.log(data);
                     showThanksModal(message.success);
